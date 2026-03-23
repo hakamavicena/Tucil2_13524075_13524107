@@ -1,19 +1,20 @@
+#pragma once
 #include <vector>
 
 struct Vec3{
     float x,y,z;
 
-    Vec3  operator+(Vec3 a){
+    Vec3 operator+(Vec3 a) const {
         Vec3 res;
         res.x = x + a.x; res.y = y + a.y; res.z = z + a.z;
         return (res);
     } 
-    Vec3  operator-(Vec3 a){
+    Vec3 operator-(Vec3 a) const {
         Vec3 res;
         res.x = x - a.x; res.y = y - a.y; res.z = z - a.z;
         return (res);
     }
-    Vec3 operator+(float a)
+    Vec3 operator+(float a) const
     {
         Vec3 res;
         res.x = x + a;
@@ -21,7 +22,7 @@ struct Vec3{
         res.z = z + a;
         return (res);
     }
-    Vec3 operator-(float a)
+    Vec3 operator-(float a) const
     {
         Vec3 res;
         res.x = x - a;
@@ -29,7 +30,7 @@ struct Vec3{
         res.z = z - a;
         return (res);
     }
-    Vec3 operator*(float a)
+    Vec3 operator*(float a) const
     {
         Vec3 res;
         res.x = x * a;

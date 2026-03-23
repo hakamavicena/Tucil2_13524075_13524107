@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 #include <fstream>
 #include <limits>
@@ -25,7 +26,7 @@ std::pair<std::string, int> inputObj()
         }
         else
         {
-            pass = false;
+            pass = true;
         }
 
         if (!pass)
@@ -38,17 +39,20 @@ std::pair<std::string, int> inputObj()
         std::cin >> maxDepth;
         if (std::cin.fail())
         {
+            std::cout << "Masukkan tingkat kedalaman yang valid\n";
             std::cin.clear();
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             pass = false;
         }
         else if (maxDepth < 1)
         {
+            std::cout << "Kedalaman minimal adalah 1!\n";
             pass = false;
         }
-
-        if (!pass)
-            std::cout << "Masukkan tingkat kedalaman yang valid\n";
+        else 
+        {
+            pass = true;
+        }
     }
 
     return std::make_pair(path, maxDepth);
