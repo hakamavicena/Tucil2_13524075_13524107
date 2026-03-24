@@ -26,7 +26,7 @@ std::pair<std::string, int> inputObj()
         }
         else
         {
-            pass = true;
+            pass = false;
         }
 
         if (!pass)

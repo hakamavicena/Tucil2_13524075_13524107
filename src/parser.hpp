@@ -28,7 +28,6 @@ Mesh validate_obj(const std::string &path) {
         }
 
         mesh.vertices.push_back({x, y, z});
-        std::cout << token << " " << x << " " << y << " " << z << std::endl;
       } else if (token == "f") {
         std::string s1, s2, s3;
         Triangle temp;
@@ -72,8 +71,6 @@ Mesh validate_obj(const std::string &path) {
         temp.v[1] = index2 - 1;
         temp.v[2] = index3 - 1;
         mesh.triangles.push_back(temp);
-        std::cout << token << " " << index1 << " " << index2 << " " << index3
-                  << std::endl;
       }
     }
   }
@@ -81,6 +78,10 @@ Mesh validate_obj(const std::string &path) {
 }
 
 AABB computeAABB(const Mesh &mesh) {
+    if (mesh.vertices.empty()) {
+        std::cerr << "Error: mesh tidak memiliki vertex." << std::endl;
+        exit(1);
+    }
   AABB res;
   Vec3 min = mesh.vertices[0];
   Vec3 max = mesh.vertices[0];
