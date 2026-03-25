@@ -6,7 +6,7 @@
 #include <sstream>
 #include <string>
 
-Mesh validate_obj(const std::string &path) {
+Mesh validateObj(const std::string &path) {
   Mesh mesh;
   std::ifstream file(path);
   std::string line;

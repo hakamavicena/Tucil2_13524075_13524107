@@ -11,7 +11,7 @@ int main() {
     std::string pathFile = userData.first;
     int depth = userData.second;
 
-    Mesh mesh = validate_obj(pathFile);
+    Mesh mesh = validateObj(pathFile);
 
     AABB initialSquare = computeAABB(mesh);
     AABB finalSquare = expandToCube(initialSquare);
