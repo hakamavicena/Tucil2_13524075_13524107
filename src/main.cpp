@@ -8,12 +8,12 @@
 #include <utility>
 
 int main() {
-    auto startTime = std::chrono::high_resolution_clock::now();
-
     std::pair<std::string, int> userData = inputObj();
 
     std::string pathFile = userData.first;
     int depth = userData.second;
+
+    auto startTime = std::chrono::high_resolution_clock::now();
 
     Mesh mesh = validateObj(pathFile);
 

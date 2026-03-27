@@ -3,8 +3,9 @@
 #include <cmath>
 #include <map>
 #include <algorithm>
+#include <thread>
 
-bool triangleIntersectsAABB(Vec3 v0, Vec3 v1, Vec3 v2, const AABB& box) {
+inline bool triangleIntersectsAABB(Vec3 v0, Vec3 v1, Vec3 v2, const AABB& box) {
     Vec3 center = {(box.min.x + box.max.x) * 0.5f, (box.min.y + box.max.y) * 0.5f, (box.min.z + box.max.z) * 0.5f};
     Vec3 extents = {(box.max.x - box.min.x) * 0.5f, (box.max.y - box.min.y) * 0.5f, (box.max.z - box.min.z) * 0.5f};
 
@@ -87,7 +88,7 @@ bool triangleIntersectsAABB(Vec3 v0, Vec3 v1, Vec3 v2, const AABB& box) {
     return true;
 }
 
-void buildOctree(OctreeNode* node, const Mesh& mesh, int maxDepth) {
+inline void buildOctreeSequential(OctreeNode* node, const Mesh& mesh, int maxDepth) {
     if (node->depth >= maxDepth || node->triangleIndices.empty()) {
         node->isLeaf = true;
         return;
@@ -124,13 +125,62 @@ void buildOctree(OctreeNode* node, const Mesh& mesh, int maxDepth) {
             }
         }
 
-        buildOctree(node->children[i], mesh, maxDepth);
+        buildOctreeSequential(node->children[i], mesh, maxDepth);
     }
 
     node->isLeaf = false;
 }
 
-void collectStats(OctreeNode* node, std::map<int, int>& nodeCount, std::map<int, int>& prunedCount) {
+inline void buildOctree(OctreeNode* node, const Mesh& mesh, int maxDepth) {
+    if (node->depth >= maxDepth || node->triangleIndices.empty()) {
+        node->isLeaf = true;
+        return;
+    }
+
+    Vec3 mid = {
+        (node->bounds.min.x + node->bounds.max.x) * 0.5f,
+        (node->bounds.min.y + node->bounds.max.y) * 0.5f,
+        (node->bounds.min.z + node->bounds.max.z) * 0.5f
+    };
+
+    AABB childBounds[8];
+    childBounds[0] = {node->bounds.min, mid};
+    childBounds[1] = {{mid.x, node->bounds.min.y, node->bounds.min.z}, {node->bounds.max.x, mid.y, mid.z}};
+    childBounds[2] = {{node->bounds.min.x, mid.y, node->bounds.min.z}, {mid.x, node->bounds.max.y, mid.z}};
+    childBounds[3] = {{mid.x, mid.y, node->bounds.min.z}, {node->bounds.max.x, node->bounds.max.y, mid.z}};
+    childBounds[4] = {{node->bounds.min.x, node->bounds.min.y, mid.z}, {mid.x, mid.y, node->bounds.max.z}};
+    childBounds[5] = {{mid.x, node->bounds.min.y, mid.z}, {node->bounds.max.x, mid.y, node->bounds.max.z}};
+    childBounds[6] = {{node->bounds.min.x, mid.y, mid.z}, {mid.x, node->bounds.max.y, node->bounds.max.z}};
+    childBounds[7] = {mid, node->bounds.max};
+
+    for (int i = 0; i < 8; i++) {
+        node->children[i] = new OctreeNode();
+        node->children[i]->bounds = childBounds[i];
+        node->children[i]->depth = node->depth + 1;
+
+        for (int idx : node->triangleIndices) {
+            const Triangle& tri = mesh.triangles[idx];
+            Vec3 v0 = mesh.vertices[tri.v[0]];
+            Vec3 v1 = mesh.vertices[tri.v[1]];
+            Vec3 v2 = mesh.vertices[tri.v[2]];
+            if (triangleIntersectsAABB(v0, v1, v2, childBounds[i])) {
+                node->children[i]->triangleIndices.push_back(idx);
+            }
+        }
+    }
+
+    std::thread threads[8];
+    for (int i = 0; i < 8; i++) {
+        threads[i] = std::thread(buildOctreeSequential, node->children[i], std::cref(mesh), maxDepth);
+    }
+    for (int i = 0; i < 8; i++) {
+        threads[i].join();
+    }
+
+    node->isLeaf = false;
+}
+
+inline void collectStats(OctreeNode* node, std::map<int, int>& nodeCount, std::map<int, int>& prunedCount) {
     if (node == nullptr) return;
     nodeCount[node->depth]++;
     if (node->isLeaf && node->triangleIndices.empty()) {
@@ -141,7 +191,7 @@ void collectStats(OctreeNode* node, std::map<int, int>& nodeCount, std::map<int,
     }
 }
 
-std::vector<OctreeNode*> collectLeafVoxels(OctreeNode* node) {
+inline std::vector<OctreeNode*> collectLeafVoxels(OctreeNode* node) {
     std::vector<OctreeNode*> result;
     if (node == nullptr) return result;
     if (node->isLeaf) {
