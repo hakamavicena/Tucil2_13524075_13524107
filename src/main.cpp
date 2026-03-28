@@ -6,6 +6,7 @@
 #include "octree.hpp"
 #include "output.hpp"
 #include <utility>
+#include "viewer.hpp"
 
 int main() {
     std::pair<std::string, int> userData = inputObj();
@@ -54,15 +55,35 @@ int main() {
     std::vector<OctreeNode*> voxels = collectLeafVoxels(root);
     std::cout << "Jumlah voxel            : " << voxels.size() << std::endl;
 
+    auto t1 = std::chrono::high_resolution_clock::now();
+    VoxelMesh single = generateVoxelMeshSingle(voxels);
+    auto t2 = std::chrono::high_resolution_clock::now();
     VoxelMesh voxelMesh = generateVoxelMesh(voxels);
+    auto t3 = std::chrono::high_resolution_clock::now();
+
+    std::cout << "Single-thread : "
+              << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count()
+              << " ms\n";
+    std::cout << "Multi-thread  : "
+              << std::chrono::duration_cast<std::chrono::milliseconds>(t3 - t2).count()
+              << " ms\n";
+    std::cout << "Thread dipakai: " << std::thread::hardware_concurrency() << "\n";
+
+    
     std::cout << "Jumlah vertex output    : " << voxelMesh.vertices.size() << std::endl;
     std::cout << "Jumlah face output      : " << voxelMesh.faces.size() << std::endl;
 
-    objWriter(voxelMesh, pathFile);
+    objWriter(voxelMesh, pathFile, depth);
 
     auto endTime = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
     std::cout << "Waktu eksekusi          : " << duration.count() << " ms" << std::endl;
+
+    Viewer view;
+    if(view.init()){
+        view.run(voxelMesh);
+        view.close();
+    }
 
     return 0;
 }

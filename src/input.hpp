@@ -30,7 +30,7 @@ std::pair<std::string, int> inputObj()
         }
 
         if (!pass)
-            std::cout << "Masukkan path yang valid\n";
+            std::cout << "Masukkan path yang valid\n\n";
     }
     pass = false;
     while (!pass)
