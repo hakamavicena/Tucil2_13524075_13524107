@@ -76,16 +76,15 @@ VoxelMesh generateVoxelMesh(const std::vector<OctreeNode*>& voxels) {
         result.vertices.insert(result.vertices.end(), threadVertices[t].begin(), threadVertices[t].end());
         result.faces.insert(result.faces.end(), threadFaces[t].begin(), threadFaces[t].end());
     }
-
     return result;
 }
 
-void objWriter(VoxelMesh res, const std::string &input_path)
+void objWriter(VoxelMesh res, const std::string &input_path, const int &depth)
 {
     fs::path p(input_path);
     std::string directory = p.parent_path().string();
     std::string stem = p.stem().string();
-    std::string output_filename = stem + "_voxelized.obj";
+    std::string output_filename = stem + "_voxelized_max-depth_" + std::to_string(depth)+".obj";
     std::string output_path = directory.empty() ? output_filename : directory + "/" + output_filename;
 
     std::ofstream output_file(output_path);
@@ -96,14 +95,14 @@ void objWriter(VoxelMesh res, const std::string &input_path)
     }
 
     for(int i = 0; i < (int)res.vertices.size(); i++){
-        output_file << "v " << res.vertices[i].x << ' ' << res.vertices[i].y << ' ' << res.vertices[i].z << std::endl;
+        output_file << "v " << res.vertices[i].x << ' ' << res.vertices[i].y << ' ' << res.vertices[i].z << '\n';
     }
 
     for (int i = 0; i < (int)res.faces.size(); i++)
     {
-        output_file << "f " << res.faces[i].v[0] << ' ' << res.faces[i].v[1] << ' ' << res.faces[i].v[2] << std::endl;
+        output_file << "f " << res.faces[i].v[0] << ' ' << res.faces[i].v[1] << ' ' << res.faces[i].v[2] << '\n';
     }
 
     output_file.close();
-    std::cout << "Output disimpan di      : " << output_path << std::endl;
+    std::cout << "Output disimpan di      : " << output_path << '\n';
 }
