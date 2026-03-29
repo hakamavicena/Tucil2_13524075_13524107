@@ -42,10 +42,9 @@ pacman -S mingw-w64-x86_64-SDL2
 
 ## Cara Kompilasi
 
-Masuk ke direktori `src`, lalu jalankan:
+Jalankan:
 
 ```bash
-cd src
 make
 ```
 
